@@ -1,0 +1,59 @@
+﻿using MagicVilla_VillaAPI.Data;
+using MagicVilla_VillaAPI.Models;
+using MagicVilla_VillaAPI.Models.DTO;
+using Microsoft.AspNetCore.Mvc; // contains ControllerBase class
+
+namespace MagicVilla_VillaAPI.Controllers
+{
+    // ControllerBase contains methods for returning all the data and users that are related to the controller .NET Application.
+    // If an MVC application is used, the controller class will derived from Controller class rather than ControllerBase class.
+    // Controller class supports Views which are used in an MVC application 
+    // Since this application is an API app. thus adding support for the MVC views will be an overhead.
+    // Using ControllerBase to reduce overhead. Can be upgraded later on by changing the inherited class
+// CONTROLLER LEVEL
+    //[Route("api/[controller]")] // 7, Using [controller] will automaticaly change the API ROUTE for all of the other clients, whenever the controller class's name (VillaAPI) change. Thus, we have to notifies the CONSUMERS**?. For that reason hard-coded API route is better.? 
+    [Route("api/VillaAPI")] // 4, Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.
+    [ApiController] // 1, This attribute notifies the controller that this will be an API controller
+    public class VillaAPIController: ControllerBase
+    {
+        // Base class for the controller
+
+        // 2, An API typically returns data (Models(Class)) -> create a new folder called Models
+
+        // 3, Create an ENDPOINT**? -> Need attribute [Route] on top of the class. - Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.
+
+        // ACTION METHOD LEVEL
+        // Fetch error response status is 500 https://localhost:7291/swagger/v1/swagger.json
+        /*[HttpGet] // 5, When adding an endpoint to the API controller, an http verb (GET, POST, ...) must be defined for that endpoint
+                  // 5, Since this enpoint(action method) retrieve all the villas, an HTTP GET endpoint attribute will be defined for this endpoint(action method).
+                  // 5, This will notifies the SWAGGER documentation (doc.) that this endpoint is a get endpoint 
+        public IEnumerable<Villa> GetVillas()
+        {
+            return new List<Villa> {
+            new Villa{Id=1,Name="Pool View" },
+            new Villa{Id=2,Name="Beach View" }
+            };
+        }*/
+
+        // 8, IRL, API controller doesnt use directly Models, because it is not desireable in PRODUCTION APPLICATION.
+        // 8, Thus, DTO is used - DTO provides a wrapper between the entity and the DB model and what is being exposed from the API.
+        /*[HttpGet]
+        public IEnumerable<VillaDTO> GetVillas()
+        {
+            return new List<VillaDTO> {
+            new VillaDTO{Id=1,Name="Pool View" },
+            new VillaDTO{Id=2,Name="Beach View" }
+            };
+        }*/
+
+        // 6, SWAGGER - Doesnt need POSTMAN -- API can be tested directly on SWAGGER
+        // 6, Swagger UI is a fancy doc. where it displays all the endpoints of the API to test, clear, execute again
+
+        // 9, API is typically used to perform CRUD operations - create, read, update, delete VillaDTO. Usually, a DB will store all of the info.. However, to simplify, we create on-the-fly data store which is the Data folder which includes VillaStore static class 
+        [HttpGet]
+        public IEnumerable<VillaDTO> GetVillas()
+        {
+            return VillaStore.villaList;
+        }
+    }
+}

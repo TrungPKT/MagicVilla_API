@@ -53,7 +53,22 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpGet]
         public IEnumerable<VillaDTO> GetVillas()
         {
-            return VillaStore.villaList;
+            return VillaStore.villaList;    // return multiple records
+        }
+
+        // 10, Get villa base on ID
+        //[HttpGet] // 10, 5, If an HTTP verb is not declare the [HttpGet] will be the default attribute of the endpoint(method, action).
+        // 10, However, this will throw AmbigousMatchException: The request matched multiple endpoints.(at https://localhost:7291/api/VillaAPI), since [HttpGet] causes confusion on whether which endpoint should be invoked.  
+        //[HttpGet("id")] // 11, If the attribute expects a parameter, EXPLICITLY DEFINE it as the parameter of the attribute
+                        // 11, https://localhost:7291/api/VillaAPI/id?id=1 <- for id == 1
+                        // 11, https://localhost:7291/api/VillaAPI/id <- for default (No input, id is NOT REQUIRED)
+        [HttpGet("{id:int}")] // 12, Explicitly define this parameter is of type INTEGER.
+                              // 12, https://localhost:7291/api/VillaAPI/1 <- diff. URI/URL.
+                              // 12, Thus, the id param is now REQUIRED.
+        public VillaDTO GetVillas(int id)
+        {
+            // 10, This might returns NULL. However, it is OKAY.
+            return VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);    // return one record.
         }
     }
 }

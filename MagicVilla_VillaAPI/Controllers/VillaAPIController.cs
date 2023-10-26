@@ -1,6 +1,7 @@
 ﻿using MagicVilla_VillaAPI.Data;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc; // contains ControllerBase class
 
 namespace MagicVilla_VillaAPI.Controllers
@@ -51,13 +52,18 @@ namespace MagicVilla_VillaAPI.Controllers
 
         // 9, API is typically used to perform CRUD operations - create, read, update, delete VillaDTO. Usually, a DB will store all of the info.. However, to simplify, we create on-the-fly data store which is the Data folder which includes VillaStore static class 
         [HttpGet]
-        public IEnumerable<VillaDTO> GetVillas()
+        // 13, When working with API, status code should be return from all of the endpoints. 
+        // 13, One way to return status code is to declare the return type as ActionResult<> which implement IActionResult interface(NOT ENTIRELY TRUE) 
+        public ActionResult<IEnumerable<VillaDTO>> GetVillas()
         {
-            return VillaStore.villaList;    // return multiple records
+            // 13, Return an OkOjectResult object that produces a Statuscodes.Status200OK response.
+            return Ok(VillaStore.villaList);    // return multiple records
+            
+            //return VillaStore.villaList;    // return multiple records
         }
 
         // 10, Get villa base on ID
-        //[HttpGet] // 10, 5, If an HTTP verb is not declare the [HttpGet] will be the default attribute of the endpoint(method, action).
+        //[HttpGet] // 10, 5, If an HTTP verb is not declare the [HttpGet] will be the default attribute of the endpoint(method, action)**.
         // 10, However, this will throw AmbigousMatchException: The request matched multiple endpoints.(at https://localhost:7291/api/VillaAPI), since [HttpGet] causes confusion on whether which endpoint should be invoked.  
         //[HttpGet("id")] // 11, If the attribute expects a parameter, EXPLICITLY DEFINE it as the parameter of the attribute
                         // 11, https://localhost:7291/api/VillaAPI/id?id=1 <- for id == 1
@@ -65,10 +71,27 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpGet("{id:int}")] // 12, Explicitly define this parameter is of type INTEGER.
                               // 12, https://localhost:7291/api/VillaAPI/1 <- diff. URI/URL.
                               // 12, Thus, the id param is now REQUIRED.
-        public VillaDTO GetVillas(int id)
+        // 13, ActionResult<>
+        public ActionResult<VillaDTO> GetVillas(int id)
         {
+            if (id == 0)
+            {
+                // 13, StatusCodes.Status400BadRequest response if id == 0
+                return BadRequest();
+            }
+            // 13, Store query result in a villa
+            var villa = VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);
+            if (villa == null)
+            {
+                // 13, StatusCodes.Status404NotFound response if villa == null
+                return NotFound();
+            }
+
+            // 13, 
+            return Ok(villa);
+
             // 10, This might returns NULL. However, it is OKAY.
-            return VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);    // return one record.
+            //return VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);    // return one record.
         }
     }
 }

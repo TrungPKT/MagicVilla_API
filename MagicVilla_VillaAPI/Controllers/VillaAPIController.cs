@@ -21,6 +21,15 @@ namespace MagicVilla_VillaAPI.Controllers
                     // 18, If we dont want to use this attribute -> goto [HttpPost]
     public class VillaAPIController : ControllerBase
     {
+        private readonly ILogger<VillaAPIController> _logger;
+
+        // 24, Dependency injecting logger which is already registered inside the CreateBuilder()
+        // 24, By using DI, we dont have to worry about instatiating or disposing the logger object.
+        public VillaAPIController(ILogger<VillaAPIController> logger)
+        {
+            _logger = logger;
+        }
+
         // Base class for the controller
 
         // 2, An API typically returns data (Models(Class)) -> create a new folder called Models
@@ -60,6 +69,8 @@ namespace MagicVilla_VillaAPI.Controllers
         // 13, One way to return status code is to declare the return type as ActionResult<> which implement IActionResult interface(NOT ENTIRELY TRUE) 
         public ActionResult<IEnumerable<VillaDTO>> GetVillas()
         {
+            // 24, Logger
+            _logger.LogInformation("Getting all the villas");
             // 13, Return an OkOjectResult object that produces a Statuscodes.Status200OK response.
             return Ok(VillaStore.villaList);    // return multiple records
 
@@ -93,6 +104,8 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             if (id == 0)
             {
+                // 25, Logger
+                _logger.LogError("Get villa error with the id: " + id);
                 // 13, StatusCodes.Status400BadRequest response if id == 0
                 return BadRequest();
             }

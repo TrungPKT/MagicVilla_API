@@ -14,7 +14,10 @@ namespace MagicVilla_VillaAPI.Controllers
 // CONTROLLER LEVEL
     //[Route("api/[controller]")] // 7, Using [controller] will automaticaly change the API ROUTE for all of the other clients, whenever the controller class's name (VillaAPI) change. Thus, we have to notifies the CONSUMERS**?. For that reason hard-coded API route is better.? 
     [Route("api/VillaAPI")] // 4, Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.
-    [ApiController] // 1, This attribute notifies the controller that this will be an API controller
+    //[ApiController] // 1, This attribute notifies the controller that this will be an API controller
+                    // 18, Because of this, the API can validate the value based on the DataAnnotation attributes declared inside VillaDTO.
+                    // 18, There are some other features when using this attribute.
+                    // 18, If we dont want to use this attribute -> goto [HttpPost]
     public class VillaAPIController: ControllerBase
     {
         // Base class for the controller
@@ -23,7 +26,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
         // 3, Create an ENDPOINT**? -> Need attribute [Route] on top of the class. - Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.
 
-        // ACTION METHOD LEVEL
+// ACTION METHOD LEVEL
         // Fetch error response status is 500 https://localhost:7291/swagger/v1/swagger.json
         /*[HttpGet] // 5, When adding an endpoint to the API controller, an http verb (GET, POST, ...) must be defined for that endpoint
                   // 5, Since this enpoint(action method) retrieve all the villas, an HTTP GET endpoint attribute will be defined for this endpoint(action method).
@@ -116,6 +119,13 @@ namespace MagicVilla_VillaAPI.Controllers
         public ActionResult<VillaDTO> CreateVilla([FromBody]VillaDTO villaDTO)   // 16, Typically, the object is received from body(content) of a request.
                                                                               // 16, Using attribute [FromBody] to denote the source of object
         {
+            // 18, If [APIController] is not used. We can use ModelState.IsValid (built-in with .net core)
+            // 18, ModelState in this case is the VillaDTO model.
+            // 18, Using debugger to view ModelState (what properties is not satisfied the requirement and what error)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (villaDTO == null)
             {
                 return BadRequest();    // 16, BadRequest(0 is from ControllerBase class
@@ -138,6 +148,8 @@ namespace MagicVilla_VillaAPI.Controllers
             // 17, CreateAtRoute("RouteName", anon types for route values, return object. Anon type property name must be the same as param of GET request (case-insensitive). Wrong route value name cause 500 internal server error
             // 17, CreateAtRoute if success return 201. Return url to the created record.
             return CreatedAtRoute("GetVilla", new { iD = villaDTO.Id }, villaDTO);
+
+            // 18, Use DataAnnotation for data validation inside VillaDTO   
         }
     }
 }

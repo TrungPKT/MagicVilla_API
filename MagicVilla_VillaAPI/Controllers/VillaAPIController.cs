@@ -11,14 +11,14 @@ namespace MagicVilla_VillaAPI.Controllers
     // Controller class supports Views which are used in an MVC application 
     // Since this application is an API app. thus adding support for the MVC views will be an overhead.
     // Using ControllerBase to reduce overhead. Can be upgraded later on by changing the inherited class
-// CONTROLLER LEVEL
+    // CONTROLLER LEVEL
     //[Route("api/[controller]")] // 7, Using [controller] will automaticaly change the API ROUTE for all of the other clients, whenever the controller class's name (VillaAPI) change. Thus, we have to notifies the CONSUMERS**?. For that reason hard-coded API route is better.? 
     [Route("api/VillaAPI")] // 4, Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.
     [ApiController] // 1, This attribute notifies the controller that this will be an API controller
                     // 18, Because of this, the API can validate the value based on the DataAnnotation attributes declared inside VillaDTO.
                     // 18, There are some other features when using this attribute.
                     // 18, If we dont want to use this attribute -> goto [HttpPost]
-    public class VillaAPIController: ControllerBase
+    public class VillaAPIController : ControllerBase
     {
         // Base class for the controller
 
@@ -26,7 +26,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
         // 3, Create an ENDPOINT**? -> Need attribute [Route] on top of the class. - Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.
 
-// ACTION METHOD LEVEL
+        // ACTION METHOD LEVEL
         // Fetch error response status is 500 https://localhost:7291/swagger/v1/swagger.json
         /*[HttpGet] // 5, When adding an endpoint to the API controller, an http verb (GET, POST, ...) must be defined for that endpoint
                   // 5, Since this enpoint(action method) retrieve all the villas, an HTTP GET endpoint attribute will be defined for this endpoint(action method).
@@ -61,7 +61,7 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             // 13, Return an OkOjectResult object that produces a Statuscodes.Status200OK response.
             return Ok(VillaStore.villaList);    // return multiple records
-            
+
             //return VillaStore.villaList;    // return multiple records
         }
 
@@ -69,15 +69,15 @@ namespace MagicVilla_VillaAPI.Controllers
         //[HttpGet] // 10, 5, If an HTTP verb is not declare the [HttpGet] will be the default attribute of the endpoint(method, action)**.
         // 10, However, this will throw AmbigousMatchException: The request matched multiple endpoints.(at https://localhost:7291/api/VillaAPI), since [HttpGet] causes confusion on whether which endpoint should be invoked.  
         //[HttpGet("id")] // 11, If the attribute expects a parameter, EXPLICITLY DEFINE it as the parameter of the attribute
-                        // 11, https://localhost:7291/api/VillaAPI/id?id=1 <- for id == 1
-                        // 11, https://localhost:7291/api/VillaAPI/id <- for default (No input, id is NOT REQUIRED)
+        // 11, https://localhost:7291/api/VillaAPI/id?id=1 <- for id == 1
+        // 11, https://localhost:7291/api/VillaAPI/id <- for default (No input, id is NOT REQUIRED)
         // 17, Name property, the route name of this GET request, DOES NOT DEPEND ON ROUTE VALUES.
         [HttpGet("{id:int}", Name = "GetVilla")] // 12, Explicitly define this parameter is of type INTEGER.
-                              // 12, https://localhost:7291/api/VillaAPI/1 <- diff. URI/URL.
-                              // 12, Thus, the id param (Case-SENsitive) is now REQUIRED. Wrong casing cause 404 not found for valid and invalid id.
-        // 13, ActionResult<>
-        // 14, 400, 404 statuscode are returned but it is undocumented.
-        // 14, Thus, to document the possible returns of this endpoint by using [ProducesResponseType()]
+                                                 // 12, https://localhost:7291/api/VillaAPI/1 <- diff. URI/URL.
+                                                 // 12, Thus, the id param (Case-SENsitive) is now REQUIRED. Wrong casing cause 404 not found for valid and invalid id.
+                                                 // 13, ActionResult<>
+                                                 // 14, 400, 404 statuscode are returned but it is undocumented.
+                                                 // 14, Thus, to document the possible returns of this endpoint by using [ProducesResponseType()]
         [ProducesResponseType(StatusCodes.Status200OK)]     // Under schema section, now there is a ProblemDetails schema
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -86,8 +86,8 @@ namespace MagicVilla_VillaAPI.Controllers
         // 14, [ProducesResponseType(404)]    
         //[ProducesResponseType(StatusCodes.Status200OK,Type = typeof(VillaDTO))]
         //public ActionResult GetVillas(int id)       // 15, Does not have a return type. Swagger now does not know about the return type of the endpoint.
-                                                    // 15, http://localhost:7291/api/VillaAPI/1 now it is not working (localhost didn’t send any data. ERR_EMPTY_RESPONSE)
-                                                    // 15, We can specifies the return type of the action in [ProducesResponseType()]
+        // 15, http://localhost:7291/api/VillaAPI/1 now it is not working (localhost didn’t send any data. ERR_EMPTY_RESPONSE)
+        // 15, We can specifies the return type of the action in [ProducesResponseType()]
         public ActionResult<VillaDTO> GetVillas(int id)
         {
             if (id == 0)
@@ -116,8 +116,8 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]        // 17, Update status for CreateAtRoute()
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<VillaDTO> CreateVilla([FromBody]VillaDTO villaDTO)   // 16, Typically, the object is received from body(content) of a request.
-                                                                              // 16, Using attribute [FromBody] to denote the source of object
+        public ActionResult<VillaDTO> CreateVilla([FromBody] VillaDTO villaDTO)   // 16, Typically, the object is received from body(content) of a request.
+                                                                                  // 16, Using attribute [FromBody] to denote the source of object
         {
             // 18, If [APIController] is not used. We can use ModelState.IsValid (built-in with .net core)
             // 18, ModelState in this case is the VillaDTO model.
@@ -158,7 +158,29 @@ namespace MagicVilla_VillaAPI.Controllers
             // 17, CreateAtRoute if success return 201. Return url to the created record.
             return CreatedAtRoute("GetVilla", new { iD = villaDTO.Id }, villaDTO);
 
-            // 18, Use DataAnnotation for data validation inside VillaDTO   
+            // 18, Use DataAnnotation for data validation inside VillaDTO
+        }
+
+        // 20, Create a delete request
+        [HttpDelete("{id:int}", Name = "DeleteVilla")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        // 20, Since we dont need a return type (<VillaDTO>), delete dont return any data just NoContent() -> Can use IActionResult
+        public IActionResult DeleteVilla(int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
+            var villa = VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);
+            if (villa == null)
+            {
+                return NotFound();
+            }
+            VillaStore.villaList.Remove(villa);
+            // 20, Can return Ok(). Should return NoContent().
+            return NoContent();
         }
     }
 }

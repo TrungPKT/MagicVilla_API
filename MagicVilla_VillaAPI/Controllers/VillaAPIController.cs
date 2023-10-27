@@ -2,6 +2,7 @@
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc; // contains ControllerBase class
 
 namespace MagicVilla_VillaAPI.Controllers
@@ -202,6 +203,31 @@ namespace MagicVilla_VillaAPI.Controllers
 
             return NoContent();
 
+        }
+
+        // 22, Update only 1 property
+        // 22, Install JsonPatch, NewtonSoftJson package from Nuget PM to the project.
+        // 22, JsonPatch, NewtonSoftJson version should be the same .NET version when creating the project.
+        // 22, Include these in Program.cs builder.Services.AddController() -> builder.Services.AddController().NewtonSoftJson() -> PATCH support is added to the service
+        // 22, https://jsonpatch.com/ - For more info on JsonPatch - How patch operation works
+        [HttpPatch("{id:int}", Name = "UpdatePartialVilla")]
+        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDTO> patchDTO)
+        {
+            if (patchDTO == null || id == 0)
+            {
+                return BadRequest();
+            }
+            var villa = VillaStore.villaList.FirstOrDefault(u => u.Id == id);
+            if (villa == null)
+            {
+                return BadRequest();
+            }
+            patchDTO.ApplyTo(villa, ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent();
         }
     }
 }

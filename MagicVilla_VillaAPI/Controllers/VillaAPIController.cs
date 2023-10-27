@@ -72,6 +72,18 @@ namespace MagicVilla_VillaAPI.Controllers
                               // 12, https://localhost:7291/api/VillaAPI/1 <- diff. URI/URL.
                               // 12, Thus, the id param is now REQUIRED.
         // 13, ActionResult<>
+        // 14, 400, 404 statuscode are returned but it is undocumented.
+        // 14, Thus, to document the possible returns of this endpoint by using [ProducesResponseType()]
+        [ProducesResponseType(StatusCodes.Status200OK)]     // Under schema section, now there is a ProblemDetails schema
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        // 14, [ProducesResponseType(200)]
+        // 14, [ProducesResponseType(400)]
+        // 14, [ProducesResponseType(404)]    
+        //[ProducesResponseType(StatusCodes.Status200OK,Type = typeof(VillaDTO))]
+        //public ActionResult GetVillas(int id)       // 15, Does not have a return type. Swagger now does not know about the return type of the endpoint.
+                                                    // 15, http://localhost:7291/api/VillaAPI/1 now it is not working (localhost didn’t send any data. ERR_EMPTY_RESPONSE)
+                                                    // 15, We can specifies the return type of the action in [ProducesResponseType()]
         public ActionResult<VillaDTO> GetVillas(int id)
         {
             if (id == 0)
@@ -87,11 +99,39 @@ namespace MagicVilla_VillaAPI.Controllers
                 return NotFound();
             }
 
-            // 13, 
+            // 13, StatusCode.Status200OK
             return Ok(villa);
 
             // 10, This might returns NULL. However, it is OKAY.
             //return VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);    // return one record.
+        }
+
+
+        // 16, Enpoint(method,action) for creating a new villa
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<VillaDTO> CreateVilla([FromBody]VillaDTO villaDTO)   // 16, Typically, the object is received from body(content) of a request.
+                                                                              // 16, Using attribute [FromBody] to denote the source of object
+        {
+            if (villaDTO == null)
+            {
+                return BadRequest();    // 16, BadRequest(0 is from ControllerBase class
+            }
+            if (villaDTO.Id > 0)   // 16, This is not a create request. Id should not be a value
+            {
+                // 16, There is no method for InternalServerError. Return custom result that is not in the default action result like BadRequest()
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            // 16, Assume users will input a distinct ID
+            // 16, Retrieve maximum ID and increase by 1
+            // 16, Possible null
+            villaDTO.Id = VillaStore.villaList.OrderByDescending(villa => villa.Id).FirstOrDefault().Id + 1;
+            VillaStore.villaList.Add(villaDTO);
+            // 16, Since we dont have  a DB to persist the change this will go away everytime restarting the application
+
+            return Ok(villaDTO);
         }
     }
 }

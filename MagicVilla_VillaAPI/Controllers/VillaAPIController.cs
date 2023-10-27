@@ -1,4 +1,5 @@
 ﻿using MagicVilla_VillaAPI.Data;
+using MagicVilla_VillaAPI.Logging;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.DTO;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -21,13 +22,22 @@ namespace MagicVilla_VillaAPI.Controllers
                     // 18, If we dont want to use this attribute -> goto [HttpPost]
     public class VillaAPIController : ControllerBase
     {
-        private readonly ILogger<VillaAPIController> _logger;
+        //private readonly ILogger<VillaAPIController> _logger;
 
-        // 24, Dependency injecting logger which is already registered inside the CreateBuilder()
-        // 24, By using DI, we dont have to worry about instatiating or disposing the logger object.
-        public VillaAPIController(ILogger<VillaAPIController> logger)
+        //// 24, Dependency injecting logger which is already registered inside the CreateBuilder()
+        //// 24, By using DI, we dont have to worry about instatiating or disposing the logger object.
+        //public VillaAPIController(ILogger<VillaAPIController> logger)
+        //{
+        //    _logger = logger;
+        //}
+
+        // 27, How to create and inject your own logger using DI.
+        // 27, Create an ILogging and Logging implementation inside Logging folders
+        // 27, Inject the independency in program.cs (Singleton, Scoped, Transient)
+        private readonly ILogging _logging;
+        public VillaAPIController(ILogging logging)
         {
-            _logger = logger;
+            _logging = logging;
         }
 
         // Base class for the controller
@@ -70,7 +80,11 @@ namespace MagicVilla_VillaAPI.Controllers
         public ActionResult<IEnumerable<VillaDTO>> GetVillas()
         {
             // 24, Logger
-            _logger.LogInformation("Getting all the villas");
+            //_logger.LogInformation("Getting all the villas");
+
+            // 27, Logging
+            _logging.Log("Getting all the villas", "");
+
             // 13, Return an OkOjectResult object that produces a Statuscodes.Status200OK response.
             return Ok(VillaStore.villaList);    // return multiple records
 
@@ -105,7 +119,11 @@ namespace MagicVilla_VillaAPI.Controllers
             if (id == 0)
             {
                 // 25, Logger
-                _logger.LogError("Get villa error with the id: " + id);
+                //_logger.LogError("Get villa error with the id: " + id);
+
+                // 26, Logging
+                _logging.Log("Get villa error with the id: " + id, "error");
+
                 // 13, StatusCodes.Status400BadRequest response if id == 0
                 return BadRequest();
             }

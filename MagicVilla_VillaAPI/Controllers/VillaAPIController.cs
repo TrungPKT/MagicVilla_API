@@ -14,7 +14,7 @@ namespace MagicVilla_VillaAPI.Controllers
 // CONTROLLER LEVEL
     //[Route("api/[controller]")] // 7, Using [controller] will automaticaly change the API ROUTE for all of the other clients, whenever the controller class's name (VillaAPI) change. Thus, we have to notifies the CONSUMERS**?. For that reason hard-coded API route is better.? 
     [Route("api/VillaAPI")] // 4, Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.
-    //[ApiController] // 1, This attribute notifies the controller that this will be an API controller
+    [ApiController] // 1, This attribute notifies the controller that this will be an API controller
                     // 18, Because of this, the API can validate the value based on the DataAnnotation attributes declared inside VillaDTO.
                     // 18, There are some other features when using this attribute.
                     // 18, If we dont want to use this attribute -> goto [HttpPost]
@@ -122,10 +122,19 @@ namespace MagicVilla_VillaAPI.Controllers
             // 18, If [APIController] is not used. We can use ModelState.IsValid (built-in with .net core)
             // 18, ModelState in this case is the VillaDTO model.
             // 18, Using debugger to view ModelState (what properties is not satisfied the requirement and what error)
-            if (!ModelState.IsValid)
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
+            // 19, if we use both [APIController] and model state, the constraint check will be process by the [APIController] before passing into Post endpoint (ModelState check will become redundant). 
+            // 19, Making custom validation - UNIQUE villa name
+            if (VillaStore.villaList.FirstOrDefault(villa => villa.Name == villaDTO.Name) != null)
             {
+                // 19, Error key should be unique.
+                ModelState.AddModelError("CustomError", "Villa is already exists");
                 return BadRequest(ModelState);
             }
+
             if (villaDTO == null)
             {
                 return BadRequest();    // 16, BadRequest(0 is from ControllerBase class

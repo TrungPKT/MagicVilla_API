@@ -182,5 +182,26 @@ namespace MagicVilla_VillaAPI.Controllers
             // 20, Can return Ok(). Should return NoContent().
             return NoContent();
         }
+
+        // 21, Update request update all data of a record.
+        [HttpPut("{id:int}", Name = "UpdateVilla")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdateVilla(int id, [FromBody] VillaDTO villaDTO)
+        {
+            // 21, This request will receive both id and a record.
+            if (villaDTO == null || id != villaDTO.Id)  // 21, Check if input id is the same in the record.
+            {
+                return BadRequest();
+            }
+            var villa = VillaStore.villaList.FirstOrDefault(u => u.Id == id);
+            villa.Name = villaDTO.Name;
+            // 21, New properties are added to test PUT request.
+            villa.Sqft = villaDTO.Sqft;
+            villa.Occupancy = villaDTO.Occupancy;
+
+            return NoContent();
+
+        }
     }
 }

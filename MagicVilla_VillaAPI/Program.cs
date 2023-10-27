@@ -1,5 +1,5 @@
 // 27, Custom logging
-using MagicVilla_VillaAPI.Logging;
+//using MagicVilla_VillaAPI.Logging;
 // 26, Serilog
 //using Serilog;
 
@@ -35,7 +35,7 @@ builder.Services.AddSwaggerGen();
 // 27, Cannot resolve the service if it was not added.
 //builder.Services.AddSingleton<ILogging, Logging>();
 // 27, If the implementation of Logging is changed we just need to change the service to the correct implementation.
-builder.Services.AddSingleton<ILogging, LoggingV2>();
+//builder.Services.AddSingleton<ILogging, LoggingV2>();
 
 var app = builder.Build();
 

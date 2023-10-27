@@ -34,11 +34,14 @@ namespace MagicVilla_VillaAPI.Controllers
         // 27, How to create and inject your own logger using DI.
         // 27, Create an ILogging and Logging implementation inside Logging folders
         // 27, Inject the independency in program.cs (Singleton, Scoped, Transient)
-        private readonly ILogging _logging;
-        public VillaAPIController(ILogging logging)
-        {
-            _logging = logging;
-        }
+        //private readonly ILogging _logging;
+        //public VillaAPIController(ILogging logging)
+        //{
+        //    _logging = logging;
+        //}
+
+        // 28, Clean up logging
+        public VillaAPIController() { }
 
         // Base class for the controller
 
@@ -83,7 +86,7 @@ namespace MagicVilla_VillaAPI.Controllers
             //_logger.LogInformation("Getting all the villas");
 
             // 27, Logging
-            _logging.Log("Getting all the villas", "");
+            //_logging.Log("Getting all the villas", "");
 
             // 13, Return an OkOjectResult object that produces a Statuscodes.Status200OK response.
             return Ok(VillaStore.villaList);    // return multiple records
@@ -122,7 +125,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 //_logger.LogError("Get villa error with the id: " + id);
 
                 // 26, Logging
-                _logging.Log("Get villa error with the id: " + id, "error");
+                //_logging.Log("Get villa error with the id: " + id, "error");
 
                 // 13, StatusCodes.Status400BadRequest response if id == 0
                 return BadRequest();

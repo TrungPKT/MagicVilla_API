@@ -1,6 +1,16 @@
 // 24, Logger is already registered inside the CreateBuilder.
 // 24, Some setting can be seen in appsettings.json
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
+
+//// 26, Log from serilog
+//// 26, Create logger from serilog: minimumlevel to be logged, write to? file or console, if file what is the interval of changing log file? day, year, infinite,...?, then create the logger
+//Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.File("Log/villaLogs.txt", rollingInterval: RollingInterval.Infinite).CreateLogger();
+
+//// 26, Tell the application to use the serilog logging configuration rather than built in console logging.
+//// 26, Advantage of DI, change implementation without changing inside the controller.
+//builder.Host.UseSerilog();
 
 // Add services to the container.
 

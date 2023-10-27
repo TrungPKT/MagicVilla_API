@@ -68,9 +68,10 @@ namespace MagicVilla_VillaAPI.Controllers
         //[HttpGet("id")] // 11, If the attribute expects a parameter, EXPLICITLY DEFINE it as the parameter of the attribute
                         // 11, https://localhost:7291/api/VillaAPI/id?id=1 <- for id == 1
                         // 11, https://localhost:7291/api/VillaAPI/id <- for default (No input, id is NOT REQUIRED)
-        [HttpGet("{id:int}")] // 12, Explicitly define this parameter is of type INTEGER.
+        // 17, Name property, the route name of this GET request, DOES NOT DEPEND ON ROUTE VALUES.
+        [HttpGet("{id:int}", Name = "GetVilla")] // 12, Explicitly define this parameter is of type INTEGER.
                               // 12, https://localhost:7291/api/VillaAPI/1 <- diff. URI/URL.
-                              // 12, Thus, the id param is now REQUIRED.
+                              // 12, Thus, the id param (Case-SENsitive) is now REQUIRED. Wrong casing cause 404 not found for valid and invalid id.
         // 13, ActionResult<>
         // 14, 400, 404 statuscode are returned but it is undocumented.
         // 14, Thus, to document the possible returns of this endpoint by using [ProducesResponseType()]
@@ -109,7 +110,7 @@ namespace MagicVilla_VillaAPI.Controllers
 
         // 16, Enpoint(method,action) for creating a new villa
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]        // 17, Update status for CreateAtRoute()
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<VillaDTO> CreateVilla([FromBody]VillaDTO villaDTO)   // 16, Typically, the object is received from body(content) of a request.
@@ -124,14 +125,19 @@ namespace MagicVilla_VillaAPI.Controllers
                 // 16, There is no method for InternalServerError. Return custom result that is not in the default action result like BadRequest()
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            // 16, Assume users will input a distinct ID
-            // 16, Retrieve maximum ID and increase by 1
-            // 16, Possible null
+            // 16, Assume users will input a distinct ID.
+            // 16, Retrieve maximum ID and increase by 1.
+            // 16, Possible null.
             villaDTO.Id = VillaStore.villaList.OrderByDescending(villa => villa.Id).FirstOrDefault().Id + 1;
             VillaStore.villaList.Add(villaDTO);
-            // 16, Since we dont have  a DB to persist the change this will go away everytime restarting the application
+            // 16, Since we dont have  a DB to persist the change this will go away everytime restarting the application.
 
-            return Ok(villaDTO);
+            //return Ok(villaDTO);
+            // 17, Sometime API needs to return the added record as a URL to the users.
+            // 17, Thus, we need to link to GET by id of the new resource.
+            // 17, CreateAtRoute("RouteName", anon types for route values, return object. Anon type property name must be the same as param of GET request (case-insensitive). Wrong route value name cause 500 internal server error
+            // 17, CreateAtRoute if success return 201. Return url to the created record.
+            return CreatedAtRoute("GetVilla", new { iD = villaDTO.Id }, villaDTO);
         }
     }
 }

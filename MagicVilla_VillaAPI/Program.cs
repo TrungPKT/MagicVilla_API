@@ -6,6 +6,9 @@
 // 24, Logger is already registered inside the CreateBuilder.
 // 24, Some setting can be seen in appsettings.json
 
+using MagicVilla_VillaAPI.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 //// 26, Log from serilog
@@ -17,6 +20,14 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseSerilog();
 
 // Add services to the container.
+// 30, add service
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
+{
+    // 30, UseSqlServer
+    // 30, GetConnectionString("name") = GetSection("connectionString")[name]
+    // 30, This will pass connectionString to ApplicationDbContext. Need to pass cS to DbContext inside AppDbContext.
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
+});
 
 builder.Services.AddControllers(option =>
 {

@@ -5,6 +5,9 @@ namespace MagicVilla_VillaAPI.Models
 {
     public class Villa
     {
+        // 30, Need a DbContext class to manage all of the Entities
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
         // 29,

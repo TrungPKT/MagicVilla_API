@@ -5,6 +5,7 @@ using MagicVilla_VillaAPI.Models.DTO;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc; // contains ControllerBase class
+using Microsoft.EntityFrameworkCore;    // AsNoTracking()
 
 namespace MagicVilla_VillaAPI.Controllers
 {
@@ -318,7 +319,15 @@ namespace MagicVilla_VillaAPI.Controllers
 
             // 32, using EF
             // 32, patchDTO only have the selected field to be updated
-            Villa villa = _db.Villas.FirstOrDefault(villa => villa.Id == id);
+            // 32, When the query is executed, it will keep track of the villa entity with the Id == id. When updating with the model with the Id == id, EF will confuse because the entity with the Id==id has already been tracked. 
+            //Villa villa = _db.Villas.FirstOrDefault(villa => villa.Id == id);
+            // 32, Thus, if we execute the folling lines
+            //villa.Name = "New name";
+            //_db.SaveChanges();
+            // 32, The DB will be update with the new value.
+            // 32, However, we are using JsonPatch, this is not a valid way to patch new changes.
+            // 32, To remedy this, AsNoTracking() so the query wont track the entity
+            Villa villa = _db.Villas.AsNoTracking().FirstOrDefault(villa => villa.Id == id);
 
             // 32, Since ApplyTo() needs VillaDTO's object, villa need to be convert to villaDTO
             VillaDTO villaDTO = new()
@@ -354,8 +363,10 @@ namespace MagicVilla_VillaAPI.Controllers
                 Rate = villaDTO.Rate,
                 Sqft = villaDTO.Sqft
             };
+
+            // 32, Update() causes EF to track the model with Id == id which has already been tracked by the villa entity (from query above)
             _db.Villas.Update(model);
-            // 32. exception: System.InvalidOperationException: 'The instance of entity type 'Villa' cannot be tracked because another instance with the same key value for {'Id'} is already being tracked. When attaching existing entities, ensure that only one entity instance with a given key value is attached. Consider using 'DbContextOptionsBuilder.EnableSensitiveDataLogging' to see the conflicting key values.'
+            // 32, exception: System.InvalidOperationException: 'The instance of entity type 'Villa' cannot be tracked because another instance with the same key value for {'Id'} is already being tracked. When attaching existing entities, ensure that only one entity instance with a given key value is attached. Consider using 'DbContextOptionsBuilder.EnableSensitiveDataLogging' to see the conflicting key values.'
 
             _db.SaveChanges();
 

@@ -22,6 +22,14 @@ namespace MagicVilla_VillaAPI.Controllers
                     // 18, If we dont want to use this attribute -> goto [HttpPost]
     public class VillaAPIController : ControllerBase
     {
+
+        // 32, Since the EF service is added to builder's container (Services), use DI to inject DbContext's object into VillaAPIController
+        private readonly ApplicationDbContext _db;
+        public VillaAPIController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
         //private readonly ILogger<VillaAPIController> _logger;
 
         //// 24, Dependency injecting logger which is already registered inside the CreateBuilder()
@@ -41,7 +49,7 @@ namespace MagicVilla_VillaAPI.Controllers
         //}
 
         // 28, Clean up logging
-        public VillaAPIController() { }
+        //public VillaAPIController() { } // 32, commented
 
         // Base class for the controller
 
@@ -89,7 +97,10 @@ namespace MagicVilla_VillaAPI.Controllers
             //_logging.Log("Getting all the villas", "");
 
             // 13, Return an OkOjectResult object that produces a Statuscodes.Status200OK response.
-            return Ok(VillaStore.villaList);    // return multiple records
+            //return Ok(VillaStore.villaList);    // return multiple records
+
+            // 32, Using EF
+            return Ok(_db.Villas.ToList());
 
             //return VillaStore.villaList;    // return multiple records
         }
@@ -131,7 +142,11 @@ namespace MagicVilla_VillaAPI.Controllers
                 return BadRequest();
             }
             // 13, Store query result in a villa
-            var villa = VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);
+            //var villa = VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);
+
+            // 32, using EF
+            var villa = _db.Villas.FirstOrDefault(villa => villa.Id == id);
+
             if (villa == null)
             {
                 // 13, StatusCodes.Status404NotFound response if villa == null
@@ -163,7 +178,13 @@ namespace MagicVilla_VillaAPI.Controllers
             //}
             // 19, if we use both [APIController] and model state, the constraint check will be process by the [APIController] before passing into Post endpoint (ModelState check will become redundant). 
             // 19, Making custom validation - UNIQUE villa name
-            if (VillaStore.villaList.FirstOrDefault(villa => villa.Name == villaDTO.Name) != null)
+            //if (VillaStore.villaList.FirstOrDefault(villa => villa.Name == villaDTO.Name) != null)
+            //{
+            //    // 19, Error key should be unique.
+            //    ModelState.AddModelError("CustomError", "Villa is already exists");
+            //    return BadRequest(ModelState);
+            //}
+            if (_db.Villas.FirstOrDefault(villa => villa.Name == villaDTO.Name) != null)
             {
                 // 19, Error key should be unique.
                 ModelState.AddModelError("CustomError", "Villa is already exists");
@@ -182,9 +203,26 @@ namespace MagicVilla_VillaAPI.Controllers
             // 16, Assume users will input a distinct ID.
             // 16, Retrieve maximum ID and increase by 1.
             // 16, Possible null.
-            villaDTO.Id = VillaStore.villaList.OrderByDescending(villa => villa.Id).FirstOrDefault().Id + 1;
-            VillaStore.villaList.Add(villaDTO);
+            // 32, With EF, Id is auto incremented
+            //villaDTO.Id = VillaStore.villaList.OrderByDescending(villa => villa.Id).FirstOrDefault().Id + 1;
+            //VillaStore.villaList.Add(villaDTO);
             // 16, Since we dont have  a DB to persist the change this will go away everytime restarting the application.
+
+            // 32, using EF to add villa
+            // 32, Since EF's Add only take object of type Villa -> Create new obj base on VillaDTO
+            Villa model = new()
+            {
+                Amenity = villaDTO.Amenity,
+                Details = villaDTO.Details,
+                Id = villaDTO.Id,
+                ImageUrl = villaDTO.ImageUrl,
+                Name = villaDTO.Name,
+                Occupancy = villaDTO.Occupancy,
+                Rate = villaDTO.Rate,
+                Sqft = villaDTO.Sqft
+            };
+            _db.Villas.Update(model);
+            _db.SaveChanges();
 
             //return Ok(villaDTO);
             // 17, Sometime API needs to return the added record as a URL to the users.
@@ -208,12 +246,21 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 return BadRequest();
             }
-            var villa = VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);
+            //var villa = VillaStore.villaList.FirstOrDefault(villa => villa.Id == id);
+
+            // 32, using EF
+            var villa = _db.Villas.FirstOrDefault(villa => villa.Id == id);
+
             if (villa == null)
             {
                 return NotFound();
             }
-            VillaStore.villaList.Remove(villa);
+            //VillaStore.villaList.Remove(villa);
+            
+            // 32, using EF
+            _db.Villas.Remove(villa);
+            _db.SaveChanges();
+
             // 20, Can return Ok(). Should return NoContent().
             return NoContent();
         }
@@ -229,11 +276,27 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 return BadRequest();
             }
-            var villa = VillaStore.villaList.FirstOrDefault(u => u.Id == id);
-            villa.Name = villaDTO.Name;
-            // 21, New properties are added to test PUT request.
-            villa.Sqft = villaDTO.Sqft;
-            villa.Occupancy = villaDTO.Occupancy;
+            //var villa = VillaStore.villaList.FirstOrDefault(u => u.Id == id);
+            //villa.Name = villaDTO.Name;
+            //// 21, New properties are added to test PUT request.
+            //villa.Sqft = villaDTO.Sqft;
+            //villa.Occupancy = villaDTO.Occupancy;
+
+            // 32, using EF
+            // 32, Write new villa object EF will automatically update the record using the correct id. Instead of manually find and update.
+            Villa model = new()
+            {
+                Amenity = villaDTO.Amenity,
+                Details = villaDTO.Details,
+                Id = villaDTO.Id,
+                ImageUrl = villaDTO.ImageUrl,
+                Name = villaDTO.Name,
+                Occupancy = villaDTO.Occupancy,
+                Rate = villaDTO.Rate,
+                Sqft = villaDTO.Sqft
+            };
+            _db.Villas.Update(model);
+            _db.SaveChanges();
 
             return NoContent();
 
@@ -251,12 +314,53 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 return BadRequest();
             }
-            var villa = VillaStore.villaList.FirstOrDefault(u => u.Id == id);
+            //var villa = VillaStore.villaList.FirstOrDefault(u => u.Id == id);
+
+            // 32, using EF
+            // 32, patchDTO only have the selected field to be updated
+            Villa villa = _db.Villas.FirstOrDefault(villa => villa.Id == id);
+
+            // 32, Since ApplyTo() needs VillaDTO's object, villa need to be convert to villaDTO
+            VillaDTO villaDTO = new()
+            {
+                Amenity = villa.Amenity,
+                Details = villa.Details,
+                Id = villa.Id,
+                ImageUrl = villa.ImageUrl,
+                Name = villa.Name,
+                Occupancy = villa.Occupancy,
+                Rate = villa.Rate,
+                Sqft = villa.Sqft
+            };
+
             if (villa == null)
             {
                 return BadRequest();
             }
-            patchDTO.ApplyTo(villa, ModelState);
+            //patchDTO.ApplyTo(villa, ModelState);
+
+            // 32, apply patch data into villaDTO
+            patchDTO.ApplyTo(villaDTO, ModelState);
+
+            // 32, convert villaDTO to villa for EF update
+            Villa model = new()
+            {
+                Amenity = villaDTO.Amenity,
+                Details = villaDTO.Details,
+                Id = villaDTO.Id,
+                ImageUrl = villaDTO.ImageUrl,
+                Name = villaDTO.Name,
+                Occupancy = villaDTO.Occupancy,
+                Rate = villaDTO.Rate,
+                Sqft = villaDTO.Sqft
+            };
+            _db.Villas.Update(model);
+            // 32. exception: System.InvalidOperationException: 'The instance of entity type 'Villa' cannot be tracked because another instance with the same key value for {'Id'} is already being tracked. When attaching existing entities, ensure that only one entity instance with a given key value is attached. Consider using 'DbContextOptionsBuilder.EnableSensitiveDataLogging' to see the conflicting key values.'
+
+            _db.SaveChanges();
+
+            // 32, Ideally stored procedure is used to update one record
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

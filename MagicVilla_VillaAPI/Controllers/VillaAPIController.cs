@@ -74,7 +74,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 Rate = villaDTO.Rate,
                 Sqft = villaDTO.Sqft
             };
-            _db.Villas.Update(model);
+            _db.Villas.Add(model);
             _db.SaveChanges();
 
             return CreatedAtRoute("GetVilla", new { iD = model.Id }, model);

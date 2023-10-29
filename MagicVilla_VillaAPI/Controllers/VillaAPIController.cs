@@ -167,7 +167,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]        // 17, Update status for CreateAtRoute()
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<VillaDTO> CreateVilla([FromBody] VillaDTO villaDTO)   // 16, Typically, the object is received from body(content) of a request.
+        public ActionResult<VillaDTO> CreateVilla([FromBody] VillaCreateDTO villaDTO)   // 16, Typically, the object is received from body(content) of a request.
                                                                                   // 16, Using attribute [FromBody] to denote the source of object
         {
             // 18, If [APIController] is not used. We can use ModelState.IsValid (built-in with .net core)
@@ -196,11 +196,11 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 return BadRequest();    // 16, BadRequest(0 is from ControllerBase class
             }
-            if (villaDTO.Id > 0)   // 16, This is not a create request. Id should not be a value
-            {
-                // 16, There is no method for InternalServerError. Return custom result that is not in the default action result like BadRequest()
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            //if (villaDTO.Id > 0)   // 16, This is not a create request. Id should not be a value
+            //{
+            //    // 16, There is no method for InternalServerError. Return custom result that is not in the default action result like BadRequest()
+            //    return StatusCode(StatusCodes.Status500InternalServerError);
+            //}
             // 16, Assume users will input a distinct ID.
             // 16, Retrieve maximum ID and increase by 1.
             // 16, Possible null.
@@ -215,7 +215,7 @@ namespace MagicVilla_VillaAPI.Controllers
             {
                 Amenity = villaDTO.Amenity,
                 Details = villaDTO.Details,
-                Id = villaDTO.Id,
+                //Id = villaDTO.Id,
                 ImageUrl = villaDTO.ImageUrl,
                 Name = villaDTO.Name,
                 Occupancy = villaDTO.Occupancy,
@@ -230,7 +230,7 @@ namespace MagicVilla_VillaAPI.Controllers
             // 17, Thus, we need to link to GET by id of the new resource.
             // 17, CreateAtRoute("RouteName", anon types for route values, return object. Anon type property name must be the same as param of GET request (case-insensitive). Wrong route value name cause 500 internal server error
             // 17, CreateAtRoute if success return 201. Return url to the created record.
-            return CreatedAtRoute("GetVilla", new { iD = villaDTO.Id }, villaDTO);
+            return CreatedAtRoute("GetVilla", new { iD = model.Id }, model);
 
             // 18, Use DataAnnotation for data validation inside VillaDTO
         }
@@ -270,7 +270,7 @@ namespace MagicVilla_VillaAPI.Controllers
         [HttpPut("{id:int}", Name = "UpdateVilla")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateVilla(int id, [FromBody] VillaDTO villaDTO)
+        public IActionResult UpdateVilla(int id, [FromBody] VillaUpdateDTO villaDTO)
         {
             // 21, This request will receive both id and a record.
             if (villaDTO == null || id != villaDTO.Id)  // 21, Check if input id is the same in the record.
@@ -309,7 +309,7 @@ namespace MagicVilla_VillaAPI.Controllers
         // 22, Include these in Program.cs builder.Services.AddController() -> builder.Services.AddController().NewtonSoftJson() -> PATCH support is added to the service
         // 22, https://jsonpatch.com/ - For more info on JsonPatch - How patch operation works
         [HttpPatch("{id:int}", Name = "UpdatePartialVilla")]
-        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDTO> patchDTO)
+        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             if (patchDTO == null || id == 0)
             {
@@ -330,7 +330,7 @@ namespace MagicVilla_VillaAPI.Controllers
             Villa villa = _db.Villas.AsNoTracking().FirstOrDefault(villa => villa.Id == id);
 
             // 32, Since ApplyTo() needs VillaDTO's object, villa need to be convert to villaDTO
-            VillaDTO villaDTO = new()
+            VillaUpdateDTO villaDTO = new()
             {
                 Amenity = villa.Amenity,
                 Details = villa.Details,

@@ -8,6 +8,8 @@
 
 using MagicVilla_VillaAPI;
 using MagicVilla_VillaAPI.Data;
+using MagicVilla_VillaAPI.Repository;
+using MagicVilla_VillaAPI.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +31,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     // 30, This will pass connectionString to ApplicationDbContext. Need to pass cS to DbContext inside AppDbContext.
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
+
+builder.Services.AddScoped<IVillaRepository, VillaRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 

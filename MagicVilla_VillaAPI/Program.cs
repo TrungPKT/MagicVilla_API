@@ -6,6 +6,7 @@
 // 24, Logger is already registered inside the CreateBuilder.
 // 24, Some setting can be seen in appsettings.json
 
+using MagicVilla_VillaAPI;
 using MagicVilla_VillaAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     // 30, This will pass connectionString to ApplicationDbContext. Need to pass cS to DbContext inside AppDbContext.
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
+
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 builder.Services.AddControllers(option =>
 {

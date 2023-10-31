@@ -13,6 +13,7 @@ using MagicVilla_VillaAPI.Repository.IRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,17 +46,22 @@ builder.Services.AddAutoMapper(typeof(MappingConfig));
 var key = builder.Configuration.GetValue<string>("ApiSettings:Secret");
 builder.Services.AddAuthentication(option =>
 {
+    // No need?
     option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+    // Configure JwtBearer
     .AddJwtBearer(option =>
     {
         option.RequireHttpsMetadata = false;
         option.SaveToken = true;
+        // Info 
         option.TokenValidationParameters = new TokenValidationParameters()
         {
             ValidateIssuerSigningKey = true,
+            // Secret
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+            // Validate Issuer and Audience with the URLs so that only they are able to access the API 
             ValidateIssuer = false,
             ValidateAudience = false
         };
@@ -69,7 +75,41 @@ builder.Services.AddControllers(option =>
 }).AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();    // 23, Add XML format for response.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddSwaggerGen();
+// 44, Adding authentication in Swagger
+builder.Services.AddSwaggerGen(options => {
+    // 44, AddSecurityDefinition() describes how the API is protected through the generated Swagger
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description =
+            "JWT Authorization header using the Bearer scheme. \r\n\r\n " +
+            "Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\n" +
+            "Example: \"Bearer 12345abcdef\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Scheme = "Bearer"
+    });
+    // 44, AddSecurityRequirement() OpenApiSecurityRequirement()
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                // 44, open authorization 2
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
+            },
+            // 44, Pass a list of empty strings because some value are passed as some key value pair (OpenApiSecurityRequirement inherit a dictionary)
+            new List<string>()
+        }
+    });
+});
 
 // 27, Custom Logging by DI.
 // 27, Singleton - Create 1 time at the start of the application, this object will be used whenever application request the implementation of the interface 
